@@ -1,25 +1,82 @@
-<p align="center">
-  <img src="docs/assets/readme/dsh-ops-header.svg" alt="dsh-ops header" width="640">
-</p>
+# Everyagent OPS
 
-<p align="center">
-  <strong>English</strong> | <a href="README.md">中文</a>
-</p>
+**English** | [中文](README.md)
 
-<div align="center" style="text-align: center;">
-  <a href="https://trendshift.io/repositories/296103" title="Trendshift · JavaScript daily list">
-    <img src="https://trendshift.io/api/badge/trendshift/repositories/296103/daily?language=JavaScript" alt="Trendshift · JavaScript daily list" width="250" height="55" style="vertical-align: middle;">
-  </a>
-</div>
+Standalone file tools for agents, based on
+[T-Auto/dsh-ops](https://github.com/T-Auto/dsh-ops), exposed through **MCP stdio**
+or a **JavaScript API**. No DSH installation or model API key is required.
+This repository keeps the upstream `dsh-ops` package name and DSH plugin entries.
+`everyagent-ops` is the new executable, not a separately published npm package;
+installing upstream `dsh-ops@latest` does not include this extension.
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/dsh-ops"><img alt="npm" src="https://img.shields.io/npm/v/dsh-ops?style=flat-square&color=6c5ce7"></a>
-  <a href="https://www.npmjs.com/package/dsh-ops"><img alt="npm downloads" src="https://img.shields.io/npm/dm/dsh-ops?style=flat-square&color=4b6fff"></a>
-  <a href="https://github.com/T-Auto/dsh-ops/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/T-Auto/dsh-ops?style=flat-square&color=eab308"></a>
-  <a href="https://upstar.dev/r/T-Auto/dsh-ops"><img alt="Upstar: #2 in JavaScript" src="https://upstar.dev/badge/T-Auto/dsh-ops.svg"></a>
-</p>
+## Features
 
-# dsh-ops
+| Mode | Tools |
+| --- | --- |
+| Read-only default, 9 tools | `read_files`, `inspect_local_file`, `stat`, `glob`, `grep`, `diff`, `read_table`, `read_docx`, `read_pdf` |
+| `workspace-write`, 6 additional tools | `write_file`, `edit_file`, `replace`, `copy`, `move`, `remove` |
+
+Tool call names carry the `ops_` prefix. Relative paths always use the configured
+workspace. Bounded reads, search continuation, revision checks, atomic writes and
+compact text output reuse the existing engine. Use an observed SHA-256 for
+`expectedRevision`; `absent` permits creation only.
+
+## Quick Start
+
+Requires Node.js `^22.19 || >=24`, npm and a Rust toolchain. The native worker
+supports Windows x64, Linux x64 and macOS arm64/x64.
+Local adapter acceptance was performed on Windows x64.
+
+```powershell
+git clone https://github.com/YuuseiP/everyagent-ops.git
+Set-Location .\everyagent-ops
+npm ci --ignore-scripts --omit=optional
+npm run build
+npm run build:ptc
+npm run test:agent
+npm run test:agent:package
+$workspace = (Get-Location).Path
+node .\bin\everyagent-ops.mjs --workspace $workspace
+```
+
+The final command waits for an MCP client. Add `--mode workspace-write` to enable
+writes. `test:agent:package` installs the tarball into a temporary directory with
+production dependencies only, then checks the JS API, MCP module and CLI without
+DSH packages. This check needs access to the npm registry.
+
+## MCP Client Configuration
+
+For clients using the `mcpServers` format, replace both paths:
+
+```json
+{
+  "mcpServers": {
+    "everyagent-ops": {
+      "command": "node",
+      "args": [
+        "D:\\CodeFile\\everyagent-ops\\bin\\everyagent-ops.mjs",
+        "--workspace",
+        "D:\\CodeFile\\my-project"
+      ]
+    }
+  }
+}
+```
+
+Programmatic clients can `import { createAgentOps } from 'dsh-ops/agent'`.
+See the [English guide](docs/everyagent.md) / [中文指南](docs/everyagent.zh.md)
+for architecture, JS examples, worker selection and the complete boundaries.
+
+This local file service uses the launching account's permissions; **it is not an
+OS sandbox** and does not automatically inherit MCP client approvals or DSH
+session authority. This extension does not provide shell execution, PTC arbitrary
+code, dynamic discovery or durable result storage. Defaults are four concurrent
+workers and 30-second calls, without automatic retries of uncertain writes.
+
+## Original DSH Plugin
+
+The upstream DSH plugin documentation follows. Its `@latest` commands select the
+upstream published package.
 
 OPS adds bounded file and document tools to DSH. Native mode returns compact, line-numbered text;
 PTC code receives typed Outcome values from the same one-shot Rust worker. Host integration is

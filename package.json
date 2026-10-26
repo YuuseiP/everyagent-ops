@@ -33,6 +33,12 @@
   "type": "module",
   "main": "lib/index.js",
   "exports": {
+    "./agent": {
+      "default": "./lib/agent/index.js"
+    },
+    "./agent/mcp": {
+      "default": "./lib/agent/mcp.js"
+    },
     ".": {
       "default": "./lib/index.js"
     },
@@ -97,7 +103,8 @@
     }
   },
   "bin": {
-    "dsh-ops": "bin/dsh-ops.mjs"
+    "dsh-ops": "bin/dsh-ops.mjs",
+    "everyagent-ops": "bin/everyagent-ops.mjs"
   },
   "dsh": {
     "bundle": {
@@ -139,6 +146,8 @@
     "native/bash-ipc"
   ],
   "scripts": {
+    "test:agent": "npm run build && node test/run.mjs agent",
+    "test:agent:package": "npm run build && node scripts/check-agent-package.mjs",
     "build": "node scripts/build.mjs",
     "prepack": "node scripts/build.mjs",
     "pretest": "node scripts/build.mjs",
@@ -224,5 +233,8 @@
   "engines": {
     "node": "^22.19 || >=24",
     "dsh": "0.2.0-rc.2 || 0.2.1-rc.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1"
   }
 }

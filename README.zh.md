@@ -1,25 +1,76 @@
-<p align="center">
-  <img src="docs/assets/readme/dsh-ops-header.svg" alt="dsh-ops 表头" width="640">
-</p>
+# Everyagent OPS
 
-<p align="center">
-  <strong>中文</strong> | <a href="README.en.md">English</a>
-</p>
+**中文** | [English](README.en.md)
 
-<div align="center" style="text-align: center;">
-  <a href="https://trendshift.io/repositories/296103" title="Trendshift · JavaScript 日榜">
-    <img src="https://trendshift.io/api/badge/trendshift/repositories/296103/daily?language=JavaScript" alt="Trendshift · JavaScript 日榜" width="250" height="55" style="vertical-align: middle;">
-  </a>
-</div>
+基于 [T-Auto/dsh-ops](https://github.com/T-Auto/dsh-ops) 的通用 Agent 文件工具适配，
+通过 **MCP stdio** 或 **JavaScript API** 接入，不需要安装 DSH 或配置模型 API Key。
+本仓库保留上游包名 `dsh-ops` 和原 DSH 插件入口；新增命令为 `everyagent-ops`，
+尚未发布为独立 npm 包，安装上游 `dsh-ops@latest` 不会获得此扩展。
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/dsh-ops"><img alt="npm" src="https://img.shields.io/npm/v/dsh-ops?style=flat-square&color=6c5ce7"></a>
-  <a href="https://www.npmjs.com/package/dsh-ops"><img alt="npm downloads" src="https://img.shields.io/npm/dm/dsh-ops?style=flat-square&color=4b6fff"></a>
-  <a href="https://github.com/T-Auto/dsh-ops/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/T-Auto/dsh-ops?style=flat-square&color=eab308"></a>
-  <a href="https://upstar.dev/r/T-Auto/dsh-ops"><img alt="Upstar: #2 in JavaScript" src="https://upstar.dev/badge/T-Auto/dsh-ops.svg"></a>
-</p>
+## 功能
 
-# dsh-ops
+| 模式 | 工具 |
+| --- | --- |
+| 默认只读，9 个工具 | `read_files`、`inspect_local_file`、`stat`、`glob`、`grep`、`diff`、`read_table`、`read_docx`、`read_pdf` |
+| `workspace-write`，额外 6 个工具 | `write_file`、`edit_file`、`replace`、`copy`、`move`、`remove` |
+
+工具调用名称带 `ops_` 前缀。相对路径始终基于配置的工作区，
+保留范围读取、搜索续页、修订哈希校验、原子写入和紧凑文本输出。
+`expectedRevision` 应使用读取所得 SHA-256；`absent` 仅允许新建文件。
+
+## 快速开始
+
+需要 Node.js `^22.19 || >=24`、npm 和 Rust 工具链。
+原生 worker 支持 Windows x64、Linux x64 和 macOS arm64/x64；
+本地适配验收环境为 Windows x64。
+
+```powershell
+git clone https://github.com/YuuseiP/everyagent-ops.git
+Set-Location .\everyagent-ops
+npm ci --ignore-scripts --omit=optional
+npm run build
+npm run build:ptc
+npm run test:agent
+npm run test:agent:package
+$workspace = (Get-Location).Path
+node .\bin\everyagent-ops.mjs --workspace $workspace
+```
+
+最后一条命令等待 MCP 客户端连接。需要写入时添加 `--mode workspace-write`。
+`test:agent:package` 将 tarball 安装到临时目录，只安装生产依赖，
+验证没有 DSH 包时的 JS API、MCP 模块及 CLI；该检查需要访问 npm registry。
+
+## MCP 客户端配置
+
+对使用 `mcpServers` 配置格式的客户端，替换以下两个路径：
+
+```json
+{
+  "mcpServers": {
+    "everyagent-ops": {
+      "command": "node",
+      "args": [
+        "D:\\CodeFile\\everyagent-ops\\bin\\everyagent-ops.mjs",
+        "--workspace",
+        "D:\\CodeFile\\my-project"
+      ]
+    }
+  }
+}
+```
+
+也可通过 `import { createAgentOps } from 'dsh-ops/agent'` 进行程序化接入。
+原理、JS 示例、worker 选择及完整边界见 [中文指南](docs/everyagent.zh.md) /
+[English guide](docs/everyagent.md)。
+
+这是使用启动账户权限的本地文件服务，**不是 OS 沙箱**；
+不会自动继承 MCP 客户端审批或 DSH 会话权限。
+本扩展不提供 shell、PTC 任意代码执行、动态发现或持久结果存储。
+默认最多 4 个并行 worker、单次 30 秒；不会自动重试未知效果的写入。
+
+## 原 DSH 插件说明
+
+以下保留上游 DSH 插件的介绍和安装方法；其中 `@latest` 指上游发布包。
 
 OPS 为 DSH 增加有界文件与文档工具。Native 模式返回紧凑、带行号的文本；PTC 代码从同一个按调用启动的 Rust worker 获取类型化 Outcome。宿主集成使用严格 TypeScript，编译后保持已有 JavaScript 包路径。
 

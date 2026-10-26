@@ -7,6 +7,19 @@ this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+- Add the standalone `everyagent-ops` MCP stdio entry and `dsh-ops/agent` API,
+  reusing file schemas, compact rendering and the native worker without a DSH host.
+  Default to workspace-confined read-only access; retain CAS, credential fencing,
+  bounded execution and cancellation. Add real-worker and MCP client tests,
+  deterministic in-flight cancellation/disconnect checks and a production-only
+  package smoke check. Project nested path descriptions onto the configured
+  workspace without changing shared DSH schemas; add bilingual quick starts.
+- 新增独立 `everyagent-ops` MCP stdio 入口和 `dsh-ops/agent` API，无需 DSH，
+  复用文件 schema、紧凑渲染和原生 worker；默认工作区内只读，保留 CAS、
+  凭据拦截、有界执行和取消，并增加真实 worker 与 MCP 客户端测试、
+  确定性的在途取消/断连检查和仅生产依赖的打包检查。
+  同步嵌套路径说明的工作区语义，不修改共享 DSH schema；补充中英文快速开始。
+
 - Add candidate-only benchmark component switches with conservative patch editing, composed-config verification and a bounded readiness turn. Archive effective switches, show them in reports, and reject comparisons across different candidate switch sets (#296).
 - 为 benchmark 增加仅作用于 candidate 的组件开关，保守编辑补丁并核验合成配置及有时限的就绪 turn；归档实际开关、在报告中展示，并拒绝不同 candidate 开关集的混配（#296）。
 
